@@ -12,14 +12,14 @@ func TestDijkstra(t *testing.T) {
 		g.AddDirected(i, i+1, 1)
 	}
 	dist, err := ShortestPathDijkstra(g, 1, 1000)
-	if err != nil || dist != 9199 {
+	if err != nil || dist != 999 {
 		t.Errorf("Baaad dist: %d", dist)
 	}
 }
 
 func BenchmarkDijkstra(b *testing.B) {
 	g := NewGraph()
-	size := 20000
+	size := 200000
 	for i := 1; i <= size; i++ {
 		g.AddVertex(i)
 	}
