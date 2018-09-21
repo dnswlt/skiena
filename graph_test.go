@@ -8,3 +8,13 @@ func TestSize(t *testing.T) {
 		t.Errorf("Incredible graph size %d\n", g.Size())
 	}
 }
+
+func TestReadDirectedGraph(t *testing.T) {
+	g, err := ReadDirectedGraph("samplegraph.json")
+	if err != nil {
+		t.Error("Couldn't read sample graph: ", err)
+	}
+	if g.Size() != 3 {
+		t.Errorf("Unexpected graph size: %d", g.Size())
+	}
+}

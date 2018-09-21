@@ -1,5 +1,11 @@
 package skiena
 
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+)
+
 type edge struct {
 	from   int
 	to     int
@@ -71,4 +77,46 @@ func MakeGraph(vertexPairs []int) *Graph {
 		g.AddDirected(vertexPairs[i], vertexPairs[i+1], 1)
 	}
 	return g
+}
+
+// MakeWeightedGraph creates a weighted graph from triples of ints (from, to, weight), all in one slice
+func MakeWeightedGraph(vals []int) *Graph {
+	g := NewGraph()
+	for i := 0; i < len(vals)-2; i += 3 {
+		g.AddVertex(vals[i])
+		g.AddVertex(vals[i+1])
+		g.AddDirected(vals[i], vals[i+1], vals[i+2])
+	}
+	return g
+}
+
+// ReadDirectedGraph reads a graph from a JSON file, format {"edges": [[1,2,1],[1,3,1]]}
+func ReadDirectedGraph(filename string) (*Graph, error) {
+	var obj struct {
+		Edges [][]int `json:"edges"`
+	}
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(data, &obj)
+	if err != nil {
+		return nil, err
+	}
+	g := NewGraph()
+	for i := 0; i < len(obj.Edges); i++ {
+		l := len(obj.Edges[i])
+		if l == 2 || l == 3 {
+			g.AddVertex(obj.Edges[i][0])
+			g.AddVertex(obj.Edges[i][1])
+			w := 1
+			if l == 3 {
+				w = obj.Edges[i][2]
+			}
+			g.AddDirected(obj.Edges[i][0], obj.Edges[i][1], w)
+		} else {
+			return nil, fmt.Errorf("Invalid edge value %v", obj.Edges[i])
+		}
+	}
+	return g, nil
 }
