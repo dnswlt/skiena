@@ -6,6 +6,7 @@ type residualEdge struct {
 	flow     int
 	capacity int
 	rev      *residualEdge
+	edge     *edge
 }
 
 // Create a residual graph of g, i.e. one in which there's an additional reverse edge for each edge of g.
@@ -13,8 +14,8 @@ func makeResidual(g *Graph) map[int][]*residualEdge {
 	m := make(map[int][]*residualEdge)
 	for _, v := range g.vertices {
 		for _, e := range v.adjacent {
-			fwdEdge := &residualEdge{v.id, e.to, 0, e.weight, nil}
-			revEdge := &residualEdge{e.to, v.id, 0, 0, fwdEdge}
+			fwdEdge := &residualEdge{v.id, e.to, 0, e.weight, nil, e}
+			revEdge := &residualEdge{e.to, v.id, 0, 0, fwdEdge, nil}
 			fwdEdge.rev = revEdge
 			m[v.id] = append(m[v.id], fwdEdge)
 			m[e.to] = append(m[e.to], revEdge)
@@ -24,14 +25,14 @@ func makeResidual(g *Graph) map[int][]*residualEdge {
 }
 
 // MaximumFlow returns the maximum flow possible in graph g from node from to node to.
-func MaximumFlow(g *Graph, from, to int) int {
+func MaximumFlow(g *Graph, from, to int) (int, map[*edge]int) {
 	src, ok := g.vertices[from]
 	if !ok {
-		return -1
+		return 0, nil
 	}
 	dest, ok := g.vertices[to]
 	if !ok {
-		return -1
+		return 0, nil
 	}
 	// build residual graph (whatever residual means...)
 	r := makeResidual(g)
@@ -77,5 +78,13 @@ func MaximumFlow(g *Graph, from, to int) int {
 		}
 		flow += d
 	}
-	return flow
+	ef := make(map[*edge]int)
+	for _, res := range r {
+		for _, re := range res {
+			if re.edge != nil {
+				ef[re.edge] = re.flow
+			}
+		}
+	}
+	return flow, ef
 }

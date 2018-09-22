@@ -1,9 +1,11 @@
 package skiena
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 )
 
 type edge struct {
@@ -33,12 +35,14 @@ func (g *Graph) Size() int {
 }
 
 // AddVertex adds a vertex to the graph. If the vertex already exists, this function does nothing.
-func (g *Graph) AddVertex(id int) {
-	_, found := g.vertices[id]
+func (g *Graph) AddVertex(id int) *vertex {
+	v, found := g.vertices[id]
 	if found {
-		return
+		return v
 	}
-	g.vertices[id] = &vertex{id: id}
+	v = &vertex{id: id}
+	g.vertices[id] = v
+	return v
 }
 
 // AddUndirected adds an undirected edge src--tgt to the graph
@@ -119,4 +123,23 @@ func ReadDirectedGraph(filename string) (*Graph, error) {
 		}
 	}
 	return g, nil
+}
+
+// WriteDot write the given graph as a .dot file to filename
+func (g *Graph) WriteDot(filename string) error {
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := bufio.NewWriter(f)
+	defer w.Flush()
+	w.WriteString("digraph {\n")
+	for _, v := range g.vertices {
+		for _, e := range v.adjacent {
+			w.WriteString(fmt.Sprintf("\"%d\" -> \"%d\" [label=\"%d\"]\n", e.from, e.to, e.weight))
+		}
+	}
+	w.WriteString("}\n")
+	return nil
 }
