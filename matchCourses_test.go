@@ -24,3 +24,15 @@ func TestMatchCoursesNoMatch(t *testing.T) {
 		t.Errorf("Funny courses: %s", n)
 	}
 }
+
+func TestMatchCoursesFail(t *testing.T) {
+	n := MatchCourses([]string{
+		"1ABC",
+		"1ABC",
+		"1ABC",
+		"1ABC",
+	})
+	if n != "" {
+		t.Errorf("Funny courses: %s", n)
+	}
+}
